@@ -25,7 +25,7 @@ queries = {
                 lastsubmissiondate,
                 completiondate
             FROM assignment_submissions
-            WHERE orgunitid = 1285363
+            WHERE orgunitid IN (1234567, 1234568, 1234569)
         )
         SELECT
             o.orgunitid,
@@ -37,9 +37,9 @@ queries = {
             a.score AS userpoints,
             asum.possiblescore AS maxpoints,
             a.feedbackisread,
-            a.feedbackreaddate,
-            a.lastsubmissiondate,
-            a.completiondate
+            strftime('%m/%d/%Y %H:%M:%S', a.feedbackreaddate::TIMESTAMP) AS feedbackreaddate,
+            strftime('%m/%d/%Y %H:%M:%S', a.lastsubmissiondate::TIMESTAMP) AS lastsubmissiondate,
+            strftime('%m/%d/%Y %H:%M:%S', a.completiondate::TIMESTAMP) AS completiondate
         FROM a
         JOIN assignment_summary AS asum
             ON a.orgunitid = asum.orgunitid
@@ -68,7 +68,7 @@ queries = {
             dt.name AS topicname,
             dp.thread,
             dp.postid,
-            dp.dateposted,
+            strftime('%m/%d/%Y %H:%M:%S', dp.dateposted::TIMESTAMP) AS dateposted,
             dp.isreply,
             dp.score,
             dp.userid
