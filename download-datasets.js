@@ -2,9 +2,12 @@
 
 Change your browser settings to specify in which folder to save the files.
 
-Paste the following in the browser console when logged into D2L with admin account OR create a bookmark in your browser and replace the URL with: javascript:(async()=>{ paste all the code below here })();
+Paste the following in the browser console when logged into D2L with admin account 
+OR create a bookmark in your browser and replace the URL with: 
+javascript:(async()=>{ paste all the code below here })();
 
-While downloading, paste in these functions in the console to pause, resume, or stop the download (if needed) since there are 100+ files with GBs of data:
+While downloading, paste in these functions in the console to pause, resume, 
+or stop the download (if needed) since there are 100+ files with GBs of data:
 
 Downloader.pause()
 Downloader.resume()
