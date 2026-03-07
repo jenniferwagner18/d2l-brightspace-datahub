@@ -11,7 +11,7 @@ con = duckdb.connect(str(db_path))
 
 ts = datetime.now().strftime("%Y%m%d_%H%M%S")
 
-# Separate multiple queries with commas
+# Separate multiple queries with commas; strftime is for Excel date formatting
 queries = {
     "assignments": """
         WITH a AS (
@@ -59,7 +59,7 @@ queries = {
                 score,
                 userid
             FROM discussion_posts
-            WHERE orgunitid = 1285363
+            WHERE orgunitid IN (1234567, 1234568, 1234569)
         )
         SELECT
             o.orgunitid,
