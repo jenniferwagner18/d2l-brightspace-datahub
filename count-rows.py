@@ -1,85 +1,43 @@
-# Unzips dataset files to CSV and counts rows; outputs new CSV file of row counts
-# Before running script, install packages using: pip3 install pandas sqlalchemy chardet
-
-import os
+import duckdb
 import pandas as pd
-import zipfile
-import chardet
+from pathlib import Path
+from datetime import datetime
 
 # -----------------------
-# Folder setup
+# Setup
 # -----------------------
-folder = "DHUB"
+BASE_DIR = Path(__file__).parent
+DB_FILE = BASE_DIR / "brightspace.duckdb"
+OUTPUT_FOLDER = BASE_DIR / "Row_Counts"
+OUTPUT_FOLDER.mkdir(exist_ok=True)
+
+# Timestamp for filename
+ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+# Connect to DuckDB
+con = duckdb.connect(str(DB_FILE))
+con.execute("PRAGMA threads=8")  # speed up parallel processing
 
 # -----------------------
-# Helper: detect file encoding
+# Get all tables
 # -----------------------
-def detect_encoding(path, nbytes=100_000):
-    with open(path, 'rb') as f:
-        raw = f.read(nbytes)
-    result = chardet.detect(raw)
-    return result['encoding'] or 'utf-8'
+tables = con.execute("SHOW TABLES").fetchall()
+tables = [t[0] for t in tables]
+print(f"Found {len(tables)} tables:\n{tables}\n")
 
 # -----------------------
-# Helper: filter valid CSVs
+# Count rows per table
 # -----------------------
-def is_valid_csv(filename):
-    return filename.lower().endswith(".csv") and not filename.startswith(".") and not filename.startswith("._")
+summary = []
+for table in tables:
+    count = con.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
+    summary.append({"Table": table, "Row_Count": count})
+    print(f"{table}: {count} rows")
 
 # -----------------------
-# Unzip CSVs into the same folder (skip if CSV exists)
+# Save summary to CSV with timestamp
 # -----------------------
-def unzip_csv_files(folder):
-    for filename in os.listdir(folder):
-        if filename.lower().endswith(".zip"):
-            zip_path = os.path.join(folder, filename)
-            with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-                for member in zip_ref.namelist():
-                    if member.lower().endswith(".csv"):
-                        dest = os.path.join(folder, os.path.basename(member))
-                        if os.path.exists(dest):
-                            print(f"Skipping {os.path.basename(member)} (already exists)")
-                            continue
-                        zip_ref.extract(member, folder)
-                        src = os.path.join(folder, member)
-                        if src != dest:
-                            os.rename(src, dest)
-                        print(f"Extracted {os.path.basename(member)} from {filename}")
-
-# -----------------------
-# Count rows in each CSV (fast, chunked)
-# -----------------------
-def count_csv_rows(folder):
-    summary = []
-    for filename in os.listdir(folder):
-        if not is_valid_csv(filename):
-            continue
-        path = os.path.join(folder, filename)
-        encoding = detect_encoding(path)
-        print(f"Counting rows in {filename} (encoding: {encoding})")
-        
-        row_count = 0
-        try:
-            for chunk in pd.read_csv(path, dtype=str, encoding=encoding, chunksize=100_000):
-                row_count += len(chunk)
-        except Exception as e:
-            print(f"  Error reading {filename}: {e}")
-            row_count = None
-        
-        summary.append({"File": filename, "Row_Count": row_count})
-    return summary
-
-# -----------------------
-# Run
-# -----------------------
-unzip_csv_files(folder)
-summary = count_csv_rows(folder)
-
-# Save summary in the current working directory
-summary_df = pd.DataFrame(summary)
-summary_csv_path = os.path.join(os.getcwd(), "zip-row-counts.csv")
-summary_df.to_csv(summary_csv_path, index=False)
-
-print("\n=== Summary ===")
-print(summary_df)
-print(f"\nSummary saved to {summary_csv_path}")
+df = pd.DataFrame(summary)
+summary_csv_path = OUTPUT_FOLDER / f"row_counts_{ts}.csv"
+df.to_csv(summary_csv_path, index=False)
+print(f"\nRow counts saved to {summary_csv_path}")
