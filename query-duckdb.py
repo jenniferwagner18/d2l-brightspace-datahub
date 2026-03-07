@@ -4,7 +4,7 @@ from datetime import datetime
 
 BASE_DIR = Path(__file__).parent
 db_path = BASE_DIR / "brightspace.duckdb"
-export_folder = BASE_DIR / "DataHub_Joins"
+export_folder = BASE_DIR / "DataHub_Queries"
 export_folder.mkdir(parents=True, exist_ok=True)
 
 con = duckdb.connect(str(db_path))
@@ -13,11 +13,45 @@ ts = datetime.now().strftime("%Y%m%d_%H%M%S")
 
 # Separate multiple queries with commas
 queries = {
-    "all_posts": """
+    "assignments": """
+        WITH a AS (
+            SELECT
+                dropboxid,
+                orgunitid,
+                submitterid,
+                score,
+                feedbackisread,
+                feedbackreaddate,
+                lastsubmissiondate,
+                completiondate
+            FROM assignment_submissions
+            WHERE orgunitid = 1285363
+        )
+        SELECT
+            o.orgunitid,
+            o.code AS coursecode,
+            o.name AS coursename,
+            a.dropboxid,
+            asum.name AS assignname,
+            a.submitterid AS userid,
+            a.score AS userpoints,
+            asum.possiblescore AS maxpoints,
+            a.feedbackisread,
+            a.feedbackreaddate,
+            a.lastsubmissiondate,
+            a.completiondate
+        FROM a
+        JOIN assignment_summary AS asum
+            ON a.orgunitid = asum.orgunitid
+            AND a.dropboxid = asum.dropboxid
+        JOIN organizational_units AS o
+            ON a.orgunitid = o.orgunitid
+    """,
+    "posts": """
         WITH dp AS (
             SELECT 
                 orgunitid,
-                topicid,
+                topicid,   
                 thread, 
                 postid,
                 dateposted, 
@@ -25,11 +59,12 @@ queries = {
                 score,
                 userid
             FROM discussion_posts
-            WHERE orgunitid = 1234567
+            WHERE orgunitid = 1285363
         )
         SELECT
             o.orgunitid,
             o.code AS coursecode,
+            o.name AS coursename,
             dt.name AS topicname,
             dp.thread,
             dp.postid,
