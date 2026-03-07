@@ -11,13 +11,12 @@ con = duckdb.connect(str(db_path))
 
 ts = datetime.now().strftime("%Y%m%d_%H%M%S")
 
-# Add as many queries as needed, separated by commas
 queries = {
     "sample_posts": """
         WITH dp AS (
             SELECT orgunitid, topicid, postid, threadid, thread, dateposted, isreply, userid, dateposted, score
             FROM discussion_posts
-            WHERE orgunitid = 1234567
+            WHERE orgunitid = 1285363
         )
         SELECT
             o.orgunitid,
