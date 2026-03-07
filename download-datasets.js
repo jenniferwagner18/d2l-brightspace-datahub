@@ -1,8 +1,15 @@
-// Paste the following code in the browser console when logged into D2L with your admin account (if you have permission to access BDS data sets).
-// Use these functions to pause, resume, or stop the download  since there are 100+ files with GBs of data:
-// Downloader.pause()
-// Downloader.resume()
-// Downloader.stop()
+/* Download ALL FULL Brightspace datasets
+
+Change your browser settings to specify in which folder to save the files.
+
+Paste the following in the browser console when logged into D2L with admin account OR create a bookmark in your browser and replace the URL with: javascript:(async()=>{ paste all the code below here })();
+
+While downloading, paste in these functions in the console to pause, resume, or stop the download (if needed) since there are 100+ files with GBs of data:
+
+Downloader.pause()
+Downloader.resume()
+Downloader.stop()
+*/
 
 window.Downloader = {
   paused: false,
@@ -11,17 +18,17 @@ window.Downloader = {
 
   pause() {
     this.paused = true;
-    console.log("⏸ Paused");
+    console.log("Paused");
   },
 
   resume() {
     this.paused = false;
-    console.log("▶ Resumed");
+    console.log("Resumed");
   },
 
   stop() {
     this.stopRequested = true;
-    console.log("⛔ Stop requested");
+    console.log("Stop requested");
   },
 
   status() {
@@ -82,7 +89,10 @@ window.Downloader = {
 
     console.log(`Found ${datasets.length} datasets\n`);
 
-    for (const wrapper of datasets) {
+  let index = 0;
+
+  for (const wrapper of datasets) {
+  index++;
   if (Downloader.stopRequested) break;
   await waitIfPaused();
 
@@ -93,7 +103,7 @@ window.Downloader = {
     "Unnamed Dataset";
 
       try {
-        console.log(`Checking: ${datasetName}`);
+        console.log(`[${index} / ${datasets.length}] Checking: ${datasetName}`);
 
         if (!dataset.ExtractsLink) {
           console.log("  No ExtractsLink found\n");
