@@ -40,7 +40,7 @@ for zip_path in zip_files:
         csv_files = [f for f in z.namelist() if f.lower().endswith(".csv")]
 
         if not csv_files:
-            print(f"⚠️ No CSV found inside {zip_path}")
+            print(f"No CSV found inside {zip_path}")
             continue
 
         csv_file = csv_files[0]  # take the first CSV
