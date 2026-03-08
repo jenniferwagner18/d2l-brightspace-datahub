@@ -1,4 +1,4 @@
-# Download Brightspace Data Sets and Build a DuckDB Database
+# Download D2L Brightspace Data Sets and Build a DuckDB Database
 
 Use the Javascript to automate downloading all or listed full Brightspace data sets through the browser when logged in with your admin account - no need for OAuth 2.0, access tokens, or downloading files manually via Data Hub.
 
