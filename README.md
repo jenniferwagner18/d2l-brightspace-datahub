@@ -4,4 +4,4 @@ Use the Javascript to automate downloading all or listed full Brightspace data s
 
 Once the ZIP files are saved to your hard drive, use Python to create tables using the DuckDB database management system. Re-build your database whenever you download updated files and query your database with SQL, with output to CSV.
 
-You can also count rows in each table, compare the tables to external files saved to a folder, or simply unzip all the downloaded files in case you need to work with the CSV files instead of the database.
+You can also compare the data set files saved in two folders from different sources, such as a data warehouse and the Data Hub. This will generate a summary of row counts and diff files.
