@@ -17,7 +17,7 @@ DATA_FOLDER = BASE_DIR / "DataHub_Export"
 DB_FILE = BASE_DIR / "brightspace.duckdb"
 HASH_FILE = BASE_DIR / "zip_hashes.pkl"
 ROW_COUNT_FILE = BASE_DIR / "table_row_counts.pkl"
-OUTPUT_FOLDER = BASE_DIR / "Row_Counts"
+OUTPUT_FOLDER = BASE_DIR / "Rebuild_Row_Counts"
 OUTPUT_FOLDER.mkdir(exist_ok=True)
 
 # -------------------------
