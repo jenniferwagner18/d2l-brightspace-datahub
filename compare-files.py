@@ -1,3 +1,6 @@
+# Compare two folders of Brightspace data set zip files for differences in rows
+# Includes summary CSV of row counts and if diff file was created for each data set
+
 from pathlib import Path
 import pandas as pd
 import zipfile
@@ -6,9 +9,10 @@ from bs4 import BeautifulSoup
 import re
 
 # -----------------------
-# Optional CSV extraction
+# Optional CSV extraction: Set to True to save extracted CSVs from data set ZIPs to your computer 
+# (summary and diff files will always be saved)
 # -----------------------
-SAVE_EXTRACTED_CSVS = False  # Set True to save extracted CSVs from data set ZIPs to your computer (summary and diff files will always be saved)
+SAVE_EXTRACTED_CSVS = False
 
 # -----------------------
 # Paths
