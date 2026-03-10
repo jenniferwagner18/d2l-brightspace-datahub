@@ -6,7 +6,7 @@ Once the ZIP files are saved to your hard drive, use Python to build your own da
 
 You can also compare the data set files saved in two folders from different sources, such as a data warehouse and the Data Hub. This will generate a summary of row counts and diff files, and optionally extract the data set ZIP files to CSV.
 
-## Command Line Tips
+## Command Line Alternatives
 If you just need row counts of downloaded zip files or want to unzip all files in the folder, open Terminal on a Mac, navigate to the folder using **cd *foldername*** and use the following commands. For Windows, try Windows Subsystem for Linux. Note that counting rows via command line is quite a bit slower compared to using DuckDB, but these commands do not require Python to be installed.
 
 `for f in *.zip; do printf "%s: " "$f"; unzip -p "$f" "*.csv" | awk '{line=$0; gsub(/""/,"",line); n=gsub(/"/,"&",line); if(!inquote) rows++; if(n%2==1) inquote=!inquote} END{print rows-1}'; done`
