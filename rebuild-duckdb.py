@@ -13,7 +13,7 @@ from datetime import datetime
 # Paths relative to the script
 # -------------------------
 BASE_DIR = pathlib.Path(__file__).parent
-DATA_FOLDER = BASE_DIR / "DataHub_Export"
+DATA_FOLDER = BASE_DIR / "DataHub_ALL"
 DB_FILE = BASE_DIR / "brightspace.duckdb"
 HASH_FILE = BASE_DIR / "zip_hashes.pkl"
 ROW_COUNT_FILE = BASE_DIR / "table_row_counts.pkl"
@@ -73,19 +73,27 @@ except FileNotFoundError:
         pickle.dump(row_counts, f)
 
 # -------------------------
-# Detect new or changed ZIPs
+# Detect new or changed ZIPs or missing tables
 # -------------------------
 to_load = []
 skipped = []
+
 for name, hash_val in current_hash.items():
     table_name = re.sub(r'[^a-z0-9]+', '_', pathlib.Path(name).stem.lower()).strip("_")
-    if name not in old_hash or old_hash[name] != hash_val:
+    
+    # Check if table exists in DuckDB
+    table_exists = con.execute(
+        "SELECT COUNT(*) FROM information_schema.tables WHERE table_name = ?", (table_name,)
+    ).fetchone()[0] > 0
+
+    if name not in old_hash or old_hash[name] != hash_val or not table_exists:
+        # Either new ZIP, changed ZIP, or table missing → reload
         to_load.append(name)
     else:
         skipped.append(name)
 
 # -------------------------
-# Detect deleted ZIPs
+# Detect deleted ZIPs and cleanup
 # -------------------------
 existing_zip_names = set(current_hash.keys())
 previous_zip_names = set(old_hash.keys())
@@ -96,9 +104,12 @@ deleted_tables = []
 for zip_name in deleted_zips:
     table_name = re.sub(r'[^a-z0-9]+', '_', pathlib.Path(zip_name).stem.lower()).strip("_")
     print(f"ZIP deleted: {zip_name} → Dropping table {table_name}")
+    
+    # Drop table if it exists
     con.execute(f"DROP TABLE IF EXISTS {table_name}")
+    
+    # Remove from tracking dicts
     deleted_tables.append(table_name)
-    # Remove from row_counts and hash tracking
     row_counts.pop(table_name, None)
     old_hash.pop(zip_name, None)
 
@@ -123,7 +134,7 @@ else:
         with zipfile.ZipFile(zip_path, 'r') as z:
             csv_files = [f for f in z.namelist() if f.lower().endswith(".csv")]
             if not csv_files:
-                print(f"⚠️ No CSV found in {zip_name}, skipping")
+                print(f"No CSV found in {zip_name}, skipping")
                 continue
             csv_file = csv_files[0]
 
